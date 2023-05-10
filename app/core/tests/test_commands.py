@@ -16,9 +16,6 @@ class CommandTests(SimpleTestCase):
 
     def test_wait_for_db_ready(self, patched_check):
         """Test waiting for db if db ready."""
-        print('\ntest_wait_for_db_ready')
-        # print(patched_check)
-        print()
 
         patched_check.return_value = True
 
@@ -29,9 +26,6 @@ class CommandTests(SimpleTestCase):
     @patch('time.sleep')
     def test_wait_for_db_delay(self, patched_sleep, patched_check):
         """Test waiting for db when getting OperationalError."""
-        print('\ntest_wait_for_db_delay')
-        print(patched_sleep, patched_check)
-        print()
 
         patched_check.side_effect = [Psycopg2OpError] * 2 + \
             [OperationalError] * 3 + [True]
