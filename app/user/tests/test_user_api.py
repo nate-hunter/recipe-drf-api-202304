@@ -127,7 +127,7 @@ class PublicUserApiTests(TestCase):
         """Test authentication is required for users."""
 
         resp = self.client.get(ME_URL)
-        self.assertEqual(resp.status, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class PrivateUserApiTests(TestCase):
@@ -146,7 +146,7 @@ class PrivateUserApiTests(TestCase):
         """Test that an authenticated User can retrieve their profile."""
 
         resp = self.client.get(ME_URL)
-        self.assertEqual(resp.status, status.HTTP_200_OK)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
         expected_data = {
             'name': self.user.name,
             'email': self.user.email,
@@ -157,7 +157,7 @@ class PrivateUserApiTests(TestCase):
         """Test POST is not allowed for the me endpoint."""
 
         resp = self.client.post(ME_URL, {})
-        self.assertEqual(resp.status, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_update_user_profile(self):
         """Test that an authenticated User can update their profile."""
@@ -167,11 +167,11 @@ class PrivateUserApiTests(TestCase):
             'password': 'newpwd321',
         }
 
-        resp = self.client.put(ME_URL, payload)
-        # resp = self.client.patch(ME_URL, payload)
+        resp = self.client.patch(ME_URL, payload)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
         self.user.refresh_from_db()
 
         self.assertEqual(self.user.name, payload['name'])
         self.assertTrue(self.user.check_password(payload['password']))
-        self.assertEqual(resp.status, status.HTTP_200_OK)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
