@@ -52,14 +52,15 @@ class PrivateTagAPITests(TestCase):
         resp = self.client.get(TAG_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
-        tags = Tag.objects.all().order_by('name')
+        tags = Tag.objects.all().order_by('-name')
         serializer = TagSerializer(tags, many=True)
         self.assertEqual(resp.data, serializer.data)
 
     def test_tags_limited_to_user(self):
         """Test an authenticated User can only GET their list of Tags."""
 
-        another_user = create_user(email='anotheruser@example.com', password='testpwd321')
+        another_user = create_user(email='anotheruser@example.com',
+                                   password='testpwd321')
 
         Tag.objects.create(user=another_user, name='healthy')
         auth_user_tag = Tag.objects.create(user=self.user, name='quick')
