@@ -21,6 +21,7 @@ def detail_url(tag_id):
     """Create + return a Tag detail URL."""
     return reverse('recipe:tag-detail', args=[tag_id])
 
+
 def create_user(email='user@example.com', password='testpwd123'):
     """Create + return a new User."""
     return get_user_model().objects.create_user(email=email, password=password)
