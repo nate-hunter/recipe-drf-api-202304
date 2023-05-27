@@ -78,6 +78,7 @@ class PrivateIngredientApiTest(TestCase):
 
     def test_update_ingredient(self):
         """Test an Ingredient can be updated."""
+
         ingredient = Ingredient.objects.create(user=self.user, name='garlic')
 
         data = {'name': 'onion'}
@@ -87,3 +88,14 @@ class PrivateIngredientApiTest(TestCase):
 
         ingredient.refresh_from_db()
         self.assertEqual(ingredient.name, data['name'])
+
+    def test_deleting_ingredient(self):
+        """Test an Ingredient can be deleted."""
+
+        ingredient = Ingredient.objects.create(user=self.user, name='garlic')
+        url = detail_url(ingredient.id)
+        resp = self.client.delete(url)
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+        ingredients = Ingredient.objects.all()
+        self.assertEqual(ingredients.count(), 0)
