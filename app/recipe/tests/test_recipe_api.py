@@ -344,7 +344,7 @@ class PrivateRecipeAPITests(TestCase):
         ingredients = Ingredient.objects.all()
         self.assertEqual(len(data['ingredients']), ingredients.count())
 
-    def test_create_recipe_with_existing_ingredeient(self):
+    def test_create_recipe_with_existing_ingredient(self):
         """Test creating a new Recipe with existing Ingredients."""
 
         ingredient = Ingredient.objects.create(name='onion', user=self.user)
@@ -378,3 +378,50 @@ class PrivateRecipeAPITests(TestCase):
 
         ingredients = Ingredient.objects.all()
         self.assertEqual(len(data['ingredients']), ingredients.count())
+
+    def test_create_ingredient_on_update(self):
+        """Test creating an Ingredient on Recipe update."""
+
+        recipe = create_recipe(user=self.user)
+
+        data = {'ingredients': [{'name': 'tomato'}]}
+        recipe_url = detail_url(recipe.id)
+        resp = self.client.patch(recipe_url, data, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        ingredient = Ingredient.objects.get(user=self.user, name='tomato')
+        self.assertIn(ingredient, recipe.ingredients.all())
+
+    def test_update_recipe_assign_ingredient(self):
+        """Test updating a Recipe and assiging it an existing Ingredient."""
+
+        ingredient_onion = Ingredient.objects.create(user=self.user,
+                                                     name='onion')
+        recipe = create_recipe(user=self.user)
+        recipe.ingredients.add(ingredient_onion)
+
+        ingredient_garlic = Ingredient.objects.create(user=self.user,
+                                                      name='garlic')
+        data = {'ingredients': [{'name': 'garlic'}]}
+        recipe_url = detail_url(recipe.id)
+        resp = self.client.patch(recipe_url, data, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        recipe.refresh_from_db()
+        self.assertEqual(recipe.ingredients.count(), 1)
+        self.assertIn(ingredient_garlic, recipe.ingredients.all())
+        self.assertNotIn(ingredient_onion, recipe.ingredients.all())
+
+    def test_clear_recipe_ingredients(self):
+        """Test clearing a Recipe's Ingredients."""
+
+        ingredient = Ingredient.objects.create(user=self.user, name='onion')
+        recipe = create_recipe(user=self.user)
+        recipe.ingredients.add(ingredient)
+        self.assertEqual(recipe.ingredients.count(), 1)
+
+        data = {'ingredients': []}
+        recipe_url = detail_url(recipe.id)
+        resp = self.client.patch(recipe_url, data, format='json')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(recipe.ingredients.count(), 0)
