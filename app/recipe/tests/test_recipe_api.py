@@ -320,9 +320,9 @@ class PrivateRecipeAPITests(TestCase):
             'time_minutes': 15,
             'price': Decimal('8.50'),
             'ingredients': [
-                {'name', 'tomato'},
-                {'name', 'onion'},
-                {'name', 'olives'},
+                {'name': 'tomato'},
+                {'name': 'onion'},
+                {'name': 'olives'},
             ]
         }
         resp = self.client.post(RECIPES_URL, data, format='json')
@@ -354,12 +354,13 @@ class PrivateRecipeAPITests(TestCase):
             'time_minutes': 15,
             'price': Decimal('8.50'),
             'ingredients': [
-                {'name', 'tomato'},
-                {'name', 'onion'},
-                {'name', 'olives'},
+                {'name': 'tomato'},
+                {'name': 'onion'},
+                {'name': 'olives'},
             ]
         }
         resp = self.client.post(RECIPES_URL, data, format='json')
+
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
         recipes = Recipe.objects.filter(user=self.user)
