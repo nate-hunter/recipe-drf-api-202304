@@ -1,6 +1,10 @@
 """
 Database models.
 """
+
+import uuid
+import os
+
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
@@ -8,6 +12,14 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+
+
+def recipe_image_file_path(instance, filename):
+    """Generate file path for a new Recipe image."""
+    file_extension = os.path.splitext(filename)[1]
+    filename = f'{uuid.uuid4()}{file_extension}'
+
+    return os.path.join('uploads', 'recipe', filename)
 
 
 class UserManager(BaseUserManager):
@@ -61,6 +73,7 @@ class Recipe(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
+    image = models.ImageField(null=True, upload_to=recipe_image_file_path)
     tags = models.ManyToManyField('Tag')
     ingredients = models.ManyToManyField('Ingredient')
 
