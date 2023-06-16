@@ -472,7 +472,7 @@ class PrivateRecipeAPITests(TestCase):
         recipe_2.ingredients.add(ingredient_2)
         recipe_3 = create_recipe(user=self.user, title='Kimchee Frid Rice')
 
-        params = {'tags': f'{ingredient_1.id}, {ingredient_2.id}'}
+        params = {'ingredients': f'{ingredient_1.id}, {ingredient_2.id}'}
         resp = self.client.get(RECIPES_URL, params)
 
         serializer_1 = RecipeSerializer(recipe_1)
