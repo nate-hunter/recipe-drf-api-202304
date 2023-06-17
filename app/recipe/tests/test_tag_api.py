@@ -1,6 +1,7 @@
 """
 Tests for the Tag API.
 """
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -9,7 +10,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Tag
+from core.models import Tag, Recipe
 
 from recipe.serializers import TagSerializer
 
@@ -98,3 +99,48 @@ class PrivateTagAPITests(TestCase):
 
         tags = Tag.objects.filter(user=self.user)
         self.assertFalse(tags.exists())
+
+    def test_filter_tags_assigned_to_recipes(self):
+        """Test listing Tags which are assigned to a given Recipe."""
+
+        tag_1 = Tag.objects.create(user=self.user, name='quick')
+        tag_2 = Tag.objects.create(user=self.user, name='healthy')
+
+        recipe = Recipe.objects.create(
+            title='Greek Salad',
+            time_minutes=15,
+            price=Decimal('7.50'),
+            user=self.user,
+        )
+        recipe.tags.add(tag_1)
+
+        resp = self.client.get(TAG_URL, {'assign_only': 1})
+
+        serializer_1 = TagSerializer(tag_1)
+        serializer_2 = TagSerializer(tag_2)
+        self.assertIn(serializer_1.data, resp.data)
+        self.assertNotIn(serializer_2.data, resp.data)
+
+    def test_filtered_tags_unique(self):
+        """Test that a unique list of filtered Tags is returned."""
+
+        tag = Tag.objects.create(user=self.user, name='healthy')
+        Tag.objects.create(user=self.user, name='quick')
+
+        recipe_1 = Recipe.objects.create(
+            title='Greek Salad',
+            time_minutes=15,
+            price=Decimal('7.50'),
+            user=self.user,
+        )
+        recipe_2 = Recipe.objects.create(
+            title='Cereal',
+            time_minutes=1,
+            price=Decimal('2.50'),
+            user=self.user,
+        )
+        recipe_1.tags.add(tag)
+        recipe_2.tags.add(tag)
+
+        resp = self.client.get(TAG_URL, {'assign_only': 1})
+        self.assertEqual(len(resp.data), 1)
